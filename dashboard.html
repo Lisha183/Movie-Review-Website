@@ -1,0 +1,345 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>User Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <style>
+
+.navbar-toggler {
+    border-color: white; /* Change border color */
+}
+
+.navbar-toggler-icon {
+    filter: invert(1); /* Makes it white */
+}
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #222;
+      color: #fff;
+      margin: 0;
+      padding: 20px;
+    }
+    h1, h2, h3 {
+      text-align: center;
+    }
+    .section {
+      margin-bottom: 30px;
+    }
+    /* Watchlist styles */
+    #watchlist-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      justify-content: center;
+    }
+    .movie-item {
+      background: #333;
+      padding: 10px;
+      border-radius: 5px;
+      text-align: center;
+      width: 150px;
+    }
+    .movie-item img {
+      width: 100%;
+      border-radius: 5px;
+    }
+    /* List styles */
+    .user-reviews-list{
+      list-style: none;
+      padding: 0;
+    }
+    .ratings-list{
+      background: #333;
+      padding: 10px;
+      margin-bottom: 5px;
+      border-radius: 5px;
+    }
+    /* Logout button */
+    #logout-btn {
+      display: block;
+      margin: 20px auto;
+      padding: 10px 20px;
+      background: red;
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    /* Welcome Message */
+    #welcome-message {
+      text-align: center;
+      font-size: 1.2em;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+    <header>
+    
+
+        <nav class="navbar navbar-expand-lg bg-body-tertiary" >
+            <div class="container-fluid" style="background-color:  #222;">
+              <img src="2.avif" alt="Bootstrap" width="60" height="48" class="d-inline-block align-text-top">
+              <a class="navbar-brand" href="index.html" style="text-align: center; color: whitesmoke;">MOVIE MANIA</a>
+              <button  class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span  class="navbar-toggler-icon"></span>
+              </button>
+    
+              <br>
+              <br>
+              <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                  <li class="nav-item">
+                    <a class="nav-link active" aria-current="page" href="index.html" style="color: whitesmoke;">Home</a>
+                  </li>
+                  <li class="nav-item">
+                    <a  style="color: whitesmoke;"class="nav-link" href="dashboard.html">Dashboard</a>
+                  </li>
+                  <li class="nav-item">
+                    <a style="color: whitesmoke;" class="nav-link" href="login.html">Membership</a>
+                  </li>
+               
+                    </ul>
+                   
+         
+                    
+                </div>
+            </div>
+        </nav>       
+    </div>
+</header>
+<br>
+
+  <h1>User Dashboard</h1>
+  <!-- Display the user name -->
+  <div id="welcome-message"></div>
+  <button id="logout-btn">Logout</button>
+
+  <div class="section" id="watchlist-section">
+    <h2>Your Watchlist</h2>
+    <div id="watchlist-container">
+      <!-- Watchlist movies will appear here -->
+    </div>
+  </div>
+
+  <div class="section" id="ratings-section">
+    <h2>Your Ratings</h2>
+    <ul id="ratings-list">
+      <!-- User ratings will be displayed here -->
+    </ul>
+  </div>
+
+  <div class="section" id="reviews-section">
+    <h2>Your Reviews</h2>
+    <ul id="user-reviews-list">
+      <!-- User reviews will be displayed here -->
+    </ul>
+  </div>
+
+  <script>
+    const API_KEY = 'fd13946ff92096dbea97ee938350a03a';
+    const BASE_URL = 'https://api.themoviedb.org/3';
+    const IMG_PATH = 'https://image.tmdb.org/t/p/w200';
+
+    // Ensure the user is logged in.
+    const currentUser = localStorage.getItem('currentUser');
+    if (!currentUser) {
+      window.location.href = 'login.html';
+    } else {
+      // Display the user's name
+      document.getElementById('welcome-message').textContent = `Welcome, ${currentUser}!`;
+    }
+
+    // Logout functionality
+    document.getElementById('logout-btn').addEventListener('click', () => {
+      localStorage.removeItem('currentUser');
+      window.location.href = 'login.html';
+    });
+
+    // --- WATCHLIST ---
+    async function displayWatchlist() {
+      const container = document.getElementById('watchlist-container');
+      container.innerHTML = "";
+      const watchlist = JSON.parse(localStorage.getItem('watchlist')) || [];
+      if (watchlist.length === 0) {
+        container.innerHTML = "<p>Your watchlist is empty.</p>";
+        return;
+      }
+      // For each movie ID, fetch movie details from TMDB.
+      for (let movieId of watchlist) {
+        try {
+          const res = await fetch(`${BASE_URL}/movie/${movieId}?api_key=${API_KEY}`);
+          const movie = await res.json();
+          const movieItem = document.createElement('div');
+          movieItem.classList.add('movie-item');
+          movieItem.innerHTML = `
+            <img src="${movie.poster_path ? IMG_PATH + movie.poster_path : 'https://via.placeholder.com/200x300?text=No+Image'}" alt="${movie.title}">
+            <p>${movie.title}</p>
+          `;
+          container.appendChild(movieItem);
+        } catch (error) {
+          console.error("Error fetching movie for watchlist:", error);
+        }
+      }
+    }
+
+    // --- USER RATINGS ---
+    function displayRatings() {
+      const ratingsList = document.getElementById('ratings-list');
+      ratingsList.innerHTML = "";
+      let found = false;
+      // Loop through localStorage keys that start with "movie-rating-"
+      for (let key in localStorage) {
+        if (localStorage.hasOwnProperty(key) && key.startsWith('movie-rating-')) {
+          const movieId = key.replace('movie-rating-', '');
+          const rating = localStorage.getItem(key);
+          const li = document.createElement('li');
+          li.textContent = `Movie ID ${movieId}: ${rating} stars`;
+          ratingsList.appendChild(li);
+          found = true;
+        }
+      }
+      if (!found) {
+        ratingsList.innerHTML = "<li>No ratings available.</li>";
+      }
+    }
+
+    // --- USER REVIEWS ---
+    function displayReviews() {
+      const reviewsList = document.getElementById('user-reviews-list');
+      reviewsList.innerHTML = "";
+      let found = false;
+      // Loop through localStorage keys that start with "reviews-"
+      for (let key in localStorage) {
+        if (localStorage.hasOwnProperty(key) && key.startsWith('reviews-')) {
+          const movieId = key.replace('reviews-', '');
+          const reviews = JSON.parse(localStorage.getItem(key));
+          reviews.forEach(review => {
+            const li = document.createElement('li');
+            li.textContent = `Movie ID ${movieId}: ${review}`;
+            reviewsList.appendChild(li);
+            found = true;
+          });
+        }
+      }
+      if (!found) {
+        reviewsList.innerHTML = "<li>No reviews available.</li>";
+      }
+    }
+
+    // Initialize Dashboard
+    function initDashboard() {
+      displayWatchlist();
+      displayRatings();
+      displayReviews();
+    }
+
+    document.addEventListener('DOMContentLoaded', initDashboard);
+  </script>
+  <footer>
+    <footer style="color: black; ">
+        <!-- Footer -->
+<footer class="bg-body-tertiary text-center">
+  <!-- Grid container -->
+    <!-- Section: Social media -->
+    <section class="mb-4">
+      <!-- Facebook -->
+      <a data-mdb-ripple-init class="btn btn-outline btn-floating m-1" href="#!" role="button"
+        ><i class="fab fa-facebook-f"></i
+      ></a>
+
+      <!-- Twitter -->
+      <a data-mdb-ripple-init class="btn btn-outline btn-floating m-1" href="#!" role="button"
+        ><i class="fab fa-twitter"></i
+      ></a>
+
+      <!-- Google -->
+      <a data-mdb-ripple-init class="btn btn-outline btn-floating m-1" href="#!" role="button"
+        ><i class="fab fa-google"></i
+      ></a>
+
+      <!-- Instagram -->
+      <a data-mdb-ripple-init class="btn btn-outline btn-floating m-1" href="#!" role="button"
+        ><i class="fab fa-instagram"></i
+      ></a>
+
+      <!-- Linkedin -->
+      <a data-mdb-ripple-init class="btn btn-outline btn-floating m-1" href="#!" role="button"
+        ><i class="fab fa-linkedin-in"></i
+      ></a>
+
+      <!-- Github -->
+      <a data-mdb-ripple-init class="btn btn-outline btn-floating m-1" href="#!" role="button"
+        ><i class="fab fa-github"></i
+      ></a>
+    </section>
+    <!-- Section: Social media -->
+
+    <!-- Section: Form -->
+    <section class="">
+      <form action="">
+        <!--Grid row-->
+        <div class="row d-flex justify-content-center">
+          <!--Grid column-->
+          <div class="col-auto">
+            <p class="pt-2">
+              <strong>Sign up for our newsletter</strong>
+            </p>
+          </div>
+          <!--Grid column-->
+
+          <!--Grid column-->
+          <div class="col-md-5 col-12">
+            <!-- Email input -->
+            <div data-mdb-input-init class="form-outline mb-4">
+              <input type="email" id="form5Example24" class="form-control"placeholder="Email address" />
+              <label class="form-label" for="form5Example24"></label>
+            </div>
+          </div>
+          <!--Grid column-->
+
+          <!--Grid column-->
+          <div class="col-auto">
+            <!-- Submit button -->
+            <button data-mdb-ripple-init type="submit" class="btn btn-outline mb-4" style="background-color: black;color: azure;">
+              Subscribe
+            </button>
+          </div>
+          <!--Grid column-->
+        </div>
+        <!--Grid row-->
+      </form>
+    </section>
+    <!-- Section: Form -->
+
+    <!-- Section: Text -->
+    <section class="mb-4">
+      <img src="1.png" alt="Bootstrap" width="60" height="48">
+      <p>Movie Maniac</p>
+      <p>Location:San Francisco, CA 94126, USA</p>
+      <p>+ 01 234 567 89
+
+      </p>
+    </section>
+    <!-- Section: Text -->
+
+  <!-- Copyright -->
+  <div class="text-center p-3" style="background-color: rgba(0, 0, 0, 0.05);">
+    © 2020 Copyright:
+    <a class="text-reset fw-bold" href="">MovieManiac.com</a>
+  </div>
+  <!-- Copyright -->
+</footer>
+<!-- Footer -->
+
+  
+  <script src="h.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+</body>
+</html>
