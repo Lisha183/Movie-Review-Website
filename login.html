@@ -23,7 +23,7 @@
      
     }
     .auth-container {
-      background: linear-gradient(135deg,black,red);
+      background-color: rgba(0, 0, 0, 0.686);
       border-radius: 10px;
       max-width: 500px;
       width: 90%;
@@ -113,7 +113,10 @@
       <input class="form-check-input" type="checkbox" id="rememberMe">
       <label class="form-check-label" for="rememberMe">Remember Me</label>
       <button id="login-btn">Login</button>
-      <button id="logout-btn">Logout</button>
+      <button id="signup-btn">Sign Up</button>
+
+    
+    
     </div>
   </div>
   <p id="auth-message"></p>
@@ -148,7 +151,39 @@
       formMessages.style.color = "lightgreen";
       
       // Save data in localStorage as needed...
+
+      // Retrieve your data from locaStorage
+var saveData = JSON.parse(localStorage.saveData || null) || {};
+
+// Store your data.
+function saveStuff(obj) {
+  saveData.obj = obj;
+  // saveData.foo = foo;
+  saveData.time = new Date().getTime();
+  localStorage.saveData = JSON.stringify(saveData);
+}
+
+// Do something with your data.
+function loadStuff() {
+  return saveData.obj || "default";
+}
     });
+    document.getElementById("login-btn").addEventListener("click", () => {
+    const username = document.getElementById("username").value.trim();
+
+    if (username) {
+        localStorage.setItem("currentUser", username);
+        localStorage.setItem("isLoggedIn", "true"); // Store login state
+        document.getElementById("auth-message").textContent = `Welcome, ${username}! Redirecting...`;
+        
+        setTimeout(() => {
+            window.location.href = "dashboard.html"; // Redirect to dashboard
+        }, 1000);
+    } else {
+        alert("Please enter a username.");
+    }
+});
+
   </script>
   <p id="auth-message"></p>
  
